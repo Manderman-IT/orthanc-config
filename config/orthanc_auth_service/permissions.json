@@ -6,7 +6,7 @@
     },
     "doctor-role": {
       "authorized_labels": ["EVERYONE","RD-NAME"],
-      "permissions": ["view","download"]
+      "permissions": ["view","download","modify"]
     },
     "external-role": {
       "authorized_labels": ["external"],
