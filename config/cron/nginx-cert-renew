@@ -3,7 +3,7 @@
 # Ajustar REPO_DIR a la ruta donde está clonado orthanc-config en el servidor.
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-REPO_DIR=/home/ubuntu/orthanc-config
+REPO_DIR=/home/ec2-user/orthanc-config
 
 # Dos veces por día (recomendación de Let's Encrypt), con jitter para no pegarle
 # a la ACME API todos a la misma hora.
