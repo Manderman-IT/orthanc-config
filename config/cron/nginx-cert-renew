@@ -1,0 +1,10 @@
+# Renovación del certificado Let's Encrypt de nginx-proxy.
+# Instalar con:  sudo cp config/cron/nginx-cert-renew /etc/cron.d/ && sudo chmod 644 /etc/cron.d/nginx-cert-renew
+# Ajustar REPO_DIR a la ruta donde está clonado orthanc-config en el servidor.
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+REPO_DIR=/home/ubuntu/orthanc-config
+
+# Dos veces por día (recomendación de Let's Encrypt), con jitter para no pegarle
+# a la ACME API todos a la misma hora.
+17 3,15 * * * root sleep $((RANDOM \% 1800)); $REPO_DIR/scripts/renew-cert.sh >> /var/log/nginx-cert-renew.log 2>&1
