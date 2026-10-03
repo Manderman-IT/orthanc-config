@@ -88,6 +88,28 @@ cd orthanc-config && make aws
 
 If the result isn't expected, review the cloud init log at `/var/log/cloud-init-output.log` on the EC2 instance.
 
+## Certificado Let's Encrypt para nginx-proxy (cron de renovación)
+
+`nginx-proxy` lee un único archivo (`$SITE_KEY_CERT_FILE`, montado como `site.pem`) con la clave privada y la cadena concatenadas. Para usar Let's Encrypt en lugar del certificado autofirmado:
+
+1. Emisión inicial en el host (modo standalone: requiere el puerto 80 abierto hacia afuera; el compose no lo usa):
+      ```sh
+      sudo certbot certonly --standalone -d $SITE_NAME
+      sudo ./scripts/install-cert.sh
+      ```
+      `install-cert.sh` arma el pem en `$SITE_KEY_CERT_FILE` y hace `nginx -s reload` en el contenedor.
+
+2. Instalar el cron (editar `REPO_DIR` en el archivo si el repo no está en `/home/ubuntu/orthanc-config`):
+      ```sh
+      sudo cp config/cron/nginx-cert-renew /etc/cron.d/
+      sudo chmod 644 /etc/cron.d/nginx-cert-renew
+      ```
+      Corre `scripts/renew-cert.sh` dos veces por día; certbot sólo renueva cuando faltan menos de 30 días y en ese caso ejecuta `install-cert.sh` como deploy-hook. Log en `/var/log/nginx-cert-renew.log`.
+
+3. Probar sin emitir nada: `sudo certbot renew --dry-run`.
+
+Si el paquete de certbot ya trae su propio timer de systemd (`systemctl list-timers | grep certbot`), alcanza con enlazar el hook en vez de instalar el cron: `sudo ln -s $PWD/scripts/install-cert.sh /etc/letsencrypt/renewal-hooks/deploy/`.
+
 ## Troubleshooting
 
 When running `docker compose up` with `-d` switch, the standard process is detached from standard output. To follow the log, use logs command:
