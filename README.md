@@ -92,6 +92,18 @@ If the result isn't expected, review the cloud init log at `/var/log/cloud-init-
 
 `nginx-proxy` lee un único archivo (`$SITE_KEY_CERT_FILE`, montado como `site.pem`) con la clave privada y la cadena concatenadas. Para usar Let's Encrypt en lugar del certificado autofirmado:
 
+0. Instalar certbot y cron en el host (Amazon Linux 2023 no trae `crond` ni tiene snap/EPEL; se usa el instalador oficial de certbot vía pip):
+      ```sh
+      sudo dnf install -y python3 augeas-libs cronie
+      sudo systemctl enable --now crond
+      sudo python3 -m venv /opt/certbot
+      sudo /opt/certbot/bin/pip install --upgrade pip certbot
+      sudo ln -sf /opt/certbot/bin/certbot /usr/bin/certbot
+      ```
+      Esta instalación no trae timer de systemd, así que la renovación la hace el cron del paso 2. Para actualizar certbot más adelante: `sudo /opt/certbot/bin/pip install --upgrade certbot`.
+
+      En el security group de la instancia, el puerto 80 tiene que estar abierto (al menos durante la validación).
+
 1. Emisión inicial en el host (modo standalone: requiere el puerto 80 abierto hacia afuera; el compose no lo usa):
       ```sh
       sudo certbot certonly --standalone -d $SITE_NAME
@@ -99,7 +111,7 @@ If the result isn't expected, review the cloud init log at `/var/log/cloud-init-
       ```
       `install-cert.sh` arma el pem en `$SITE_KEY_CERT_FILE` y hace `nginx -s reload` en el contenedor.
 
-2. Instalar el cron (editar `REPO_DIR` en el archivo si el repo no está en `/home/ubuntu/orthanc-config`):
+2. Instalar el cron (editar `REPO_DIR` en el archivo si el repo no está en `/home/ec2-user/orthanc-config`):
       ```sh
       sudo cp config/cron/nginx-cert-renew /etc/cron.d/
       sudo chmod 644 /etc/cron.d/nginx-cert-renew
