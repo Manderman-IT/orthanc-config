@@ -12,7 +12,7 @@ set -a; source "$REPO_DIR/.env"; set +a
 
 LINEAGE="${RENEWED_LINEAGE:-/etc/letsencrypt/live/$SITE_NAME}"
 PEM="$REPO_DIR/$SITE_KEY_CERT_FILE"
-CONTAINER=nginx-proxy
+CONTAINER="${NGINX_CONTAINER:-nginx-proxy}"
 
 log() { echo "[$(date '+%F %T')] [install-cert] $*"; }
 
